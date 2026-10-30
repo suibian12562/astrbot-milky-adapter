@@ -1,5 +1,7 @@
 # AstrBot Milky Adapter
 
+> **AI 编写声明**：本项目的源代码、测试和文档均由 AI 编写。项目以人工提出需求、AI 实现的方式开发；使用前请自行审阅代码并在隔离环境验证。项目不承诺未经实机联调的行为，也不构成安全保证。
+
 将实现 Milky 协议的 QQ 客户端接入 AstrBot。插件注册 `milky` 消息平台，通过 HTTP API 发送请求，通过正向 WebSocket 接收事件，不需要修改 AstrBot 源码。
 
 ## 环境
