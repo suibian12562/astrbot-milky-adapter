@@ -1,6 +1,6 @@
 name: astrbot_plugin_milky_adapter
 display_name: Milky Adapter
 desc: "Milky QQ protocol platform adapter with HTTP API and forward WebSocket events"
-version: v0.1.0
+version: v0.2.0
 author: suibian12562
 astrbot_version: ">=4.9.2"

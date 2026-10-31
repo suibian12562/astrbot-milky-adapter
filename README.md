@@ -94,6 +94,12 @@ history = await event.bot.get_history_messages("group", peer_id=123456, limit=20
 
 请求类事件支持 `await event.accept()` 和 `await event.reject(reason="...")`，仅适用于好友请求、入群请求、群成员邀请他人入群及邀请机器人入群。不会自动执行这些操作；非请求事件会抛出 `NotImplementedError`。拒绝入群邀请的协议 API 不支持理由，该场景不会传递 `reason`。
 
+## 版本与更新
+
+当前版本 `v0.2.0`。插件市场收录后，市场会每小时自动读取本仓库的 `metadata.yaml` 与仓库信息；**发布新版本只需修改 `version` 并推送到 GitHub**，无需重复提交市场登记。首次收录仍需通过插件市场表单或 `PLUGIN_PUBLISH` Issue 提交一次。
+
+v0.2.0 变更：补齐 Milky v1.3.0 全部 65 个稳定 HTTP API 的显式方法、接收转发展开、群信息与成员查询、非消息事件分发、文件上传事件处理、请求事件 `accept`/`reject`，并加入平台图标。
+
 ## 实现参考
 
 参考 [nonebot/adapter-milky](https://github.com/nonebot/adapter-milky/tree/be631a186de7d18f488bb54e8a3aa807cd72f226)（MIT License）的事件分类、请求操作和 URI 处理设计，按 AstrBot 接口独立实现，未直接复制其源码。主要差异：NoneBot 提供类型化事件/响应及 Webhook 接收，本项目仍使用原始响应字典和 AstrBot `OTHER_MESSAGE`，传输目前仅正向 WebSocket。协议字段以固定 Milky v1.3.0 规范为准，不直接将上游 master 当作稳定版定义。
