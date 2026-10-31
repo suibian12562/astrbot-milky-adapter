@@ -24,7 +24,7 @@
 4. 在 AstrBot 管理面板的消息平台页面新增 **Milky**，设置协议端地址和 token 后启用。不同 AstrBot 版本的界面可能不同；若未出现类型，先查看插件加载日志，再重启。
 5. 协议端和 AstrBot 不在同一台主机或容器时，填写从 AstrBot 环境实际能够访问的地址。容器内的 `127.0.0.1` 指容器自身。
 
-本项目还没有发布仓库地址，因此不提供虚构的插件市场安装链接。
+仓库地址：[suibian12562/astrbot-milky-adapter](https://github.com/suibian12562/astrbot-milky-adapter)。插件市场收录状态以[市场页面](https://cloud.astrbot.app/plugin/suibian12562/astrbot_plugin_milky_adapter)为准；未收录时也可在管理面板“插件管理 → 安装 → 从链接安装”中直接填写仓库链接。
 
 ## 配置
 
