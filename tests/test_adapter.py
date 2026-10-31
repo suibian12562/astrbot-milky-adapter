@@ -158,6 +158,41 @@ class AdapterTests(unittest.IsolatedAsyncioTestCase):
         await self.adapter.handle_event({"event_type": "heartbeat"})
         self.assertTrue(self.queue.empty())
 
+    def test_logo_is_registered_and_present(self):
+        logo = Path(__file__).resolve().parents[1] / "logo.png"
+        self.assertTrue(logo.is_file())
+        self.assertEqual(self.adapter.meta().logo_path, "logo.png")
+        header = logo.read_bytes()[:8]
+        self.assertEqual(header, b"\x89PNG\r\n\x1a\n")
+
+    async def test_request_accept_reject_routing(self):
+        from milky_api import MilkyAPIMixin
+        class RequestClient(MilkyAPIMixin, FakeClient):
+            pass
+        self.adapter.client = RequestClient()
+        cases = [
+            ("friend_request", {"initiator_uid": "uid"}, "friend_request"),
+            ("group_join_request", {"group_id": 100, "notification_seq": 5, "is_filtered": True}, "group_request"),
+            ("group_invited_join_request", {"group_id": 100, "notification_seq": 6}, "group_request"),
+            ("group_invitation", {"group_id": 100, "invitation_seq": 7}, "group_invitation"),
+        ]
+        for kind, data, api_suffix in cases:
+            raw = {"event_type": kind, "self_id": 9, "time": 10, "data": data}
+            event = self.adapter.create_event(self.adapter._convert_other_event(raw))
+            await event.accept()
+            await event.reject("declined")
+            calls = self.adapter.client.calls
+            self.assertEqual(calls[-2][0], "accept_" + api_suffix)
+            self.assertEqual(calls[-1][0], "reject_" + api_suffix)
+            if kind == "group_join_request":
+                self.assertTrue(calls[-1][1]["is_filtered"])
+                self.assertEqual(calls[-1][1]["notification_type"], "join_request")
+            if kind == "group_invitation":
+                self.assertNotIn("reason", calls[-1][1])
+        message_event = self.adapter.create_event(await self.adapter.convert_message(self.event()))
+        with self.assertRaises(NotImplementedError):
+            await message_event.accept()
+
     async def test_notifications_preserve_raw_and_do_not_drop_repeated_actions(self):
         event = {"event_type": "group_member_increase", "self_id": 9, "time": 10,
                  "data": {"group_id": 100, "user_id": 2, "operator_id": None}}

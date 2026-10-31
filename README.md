@@ -92,6 +92,12 @@ history = await event.bot.get_history_messages("group", peer_id=123456, limit=20
 
 自动回复使用 AstrBot 的标准 `event.send()` / `yield event.plain_result(...)`。主动发送使用 AstrBot 标准 `context.send_message()` 和事件的 `unified_msg_origin`，不要自行猜测会话字符串。
 
+请求类事件支持 `await event.accept()` 和 `await event.reject(reason="...")`，仅适用于好友请求、入群请求、群成员邀请他人入群及邀请机器人入群。不会自动执行这些操作；非请求事件会抛出 `NotImplementedError`。拒绝入群邀请的协议 API 不支持理由，该场景不会传递 `reason`。
+
+## 实现参考
+
+参考 [nonebot/adapter-milky](https://github.com/nonebot/adapter-milky/tree/be631a186de7d18f488bb54e8a3aa807cd72f226)（MIT License）的事件分类、请求操作和 URI 处理设计，按 AstrBot 接口独立实现，未直接复制其源码。主要差异：NoneBot 提供类型化事件/响应及 Webhook 接收，本项目仍使用原始响应字典和 AstrBot `OTHER_MESSAGE`，传输目前仅正向 WebSocket。协议字段以固定 Milky v1.3.0 规范为准，不直接将上游 master 当作稳定版定义。
+
 ## 测试
 
 独立测试不需要安装整个 AstrBot：
@@ -105,7 +111,7 @@ python -m unittest discover -v
 - `tests/test_client.py`：启动本地随机端口的 aiohttp 服务，验证真实 HTTP/WS 通信、鉴权、错误信封、坏帧过滤、关闭和 URL 配置。
 - `tests/test_adapter.py`：使用最小 AstrBot 测试替身，验证组件映射、文件顺序、主动消息路由、去重、媒体大小限制和终止过程。
 
-测试替身不能代替真实 AstrBot 插件加载验收。当前共 43 项测试，显式排除已知受权限阻止的本地媒体测试后，其余 42 项通过；本地媒体测试在 Windows 受限执行环境创建临时目录后遇到权限拒绝，尚未完成该项验证。这不是完整测试通过。未使用真实 QQ 账号或实机协议端验证。
+测试替身不能代替真实 AstrBot 插件加载验收。当前共 45 项测试，显式排除已知受权限阻止的本地媒体测试后，其余 44 项通过；本地媒体测试在 Windows 受限执行环境创建临时目录后遇到权限拒绝，尚未完成该项验证。这不是完整测试通过。未使用真实 QQ 账号或实机协议端验证。
 
 部署后建议依次验证：插件加载、平台连接、好友文字、群聊 @机器人、图片/语音/视频、引用、文件、主动发送、协议端重启后重连，以及 AstrBot 停止时连接释放。
 

@@ -31,6 +31,32 @@ class MilkyMessageEvent(AstrMessageEvent):
         self.adapter = adapter
         self.bot = adapter.client
 
+    async def accept(self):
+        """Accept supported Milky friend/group request notifications."""
+        event = self.message_obj.raw_message
+        event_type, data = event.get("event_type"), event.get("data", {})
+        if event_type == "friend_request":
+            return await self.bot.accept_friend_request(initiator_uid=data["initiator_uid"], is_filtered=data.get("is_filtered", False))
+        if event_type in {"group_join_request", "group_invited_join_request"}:
+            kind = "join_request" if event_type == "group_join_request" else "invited_join_request"
+            return await self.bot.accept_group_request(notification_seq=data["notification_seq"], notification_type=kind, group_id=data["group_id"], is_filtered=data.get("is_filtered", False))
+        if event_type == "group_invitation":
+            return await self.bot.accept_group_invitation(group_id=data["group_id"], invitation_seq=data["invitation_seq"])
+        raise NotImplementedError(f"Milky event {event_type!r} is not a request")
+
+    async def reject(self, reason=None):
+        """Reject supported Milky friend/group request notifications."""
+        event = self.message_obj.raw_message
+        event_type, data = event.get("event_type"), event.get("data", {})
+        if event_type == "friend_request":
+            return await self.bot.reject_friend_request(initiator_uid=data["initiator_uid"], is_filtered=data.get("is_filtered", False), reason=reason)
+        if event_type in {"group_join_request", "group_invited_join_request"}:
+            kind = "join_request" if event_type == "group_join_request" else "invited_join_request"
+            return await self.bot.reject_group_request(notification_seq=data["notification_seq"], notification_type=kind, group_id=data["group_id"], is_filtered=data.get("is_filtered", False), reason=reason)
+        if event_type == "group_invitation":
+            return await self.bot.reject_group_invitation(group_id=data["group_id"], invitation_seq=data["invitation_seq"])
+        raise NotImplementedError(f"Milky event {event_type!r} is not a request")
+
     async def send(self, message):
         envelope = self.message_obj.raw_message
         raw = envelope["data"]
@@ -81,6 +107,7 @@ class MilkyMessageEvent(AstrMessageEvent):
     "milky", "Milky QQ protocol adapter (HTTP + forward WebSocket)",
     default_config_tmpl=DEFAULT_CONFIG,
     adapter_display_name="Milky", support_streaming_message=False,
+    logo_path="logo.png",
 )
 class MilkyAdapter(Platform):
     def __init__(self, platform_config: dict, platform_settings: dict, event_queue: asyncio.Queue):
@@ -98,6 +125,7 @@ class MilkyAdapter(Platform):
         self.metadata = PlatformMetadata(
             name="milky", description="Milky QQ protocol adapter", id=config["id"],
             adapter_display_name="Milky", support_streaming_message=False,
+            logo_path="logo.png",
         )
         self._stop = asyncio.Event()
         self._seen = OrderedDict()
